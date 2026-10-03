@@ -1,0 +1,16 @@
+---
+title: Running the app
+---
+
+```bash
+nostalgia run --port 8000
+```
+
+or from Python:
+
+```python
+from nostalgia_index import run_app
+run_app(port=8000)
+```
+
+Pick topics or a preset, set smoothing and dates, then press Compute index.

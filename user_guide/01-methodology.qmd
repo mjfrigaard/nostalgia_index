@@ -1,0 +1,32 @@
+---
+title: Methodology
+---
+
+Raw pageviews have two problems: Wikipedia wide traffic has drifted since 2015, and topics live on different scales. The index normalizes twice.
+
+```
+views_per_million = article_views / total_project_views x 1e6
+smoothed          = rolling 28 day median
+nostalgia_index   = smoothed / baseline_median x 100
+```
+
+The baseline is the first 12 months of each series. A revival event is a day where the unsmoothed index exceeds 3x the trailing 90 day median.
+
+Caveats: data starts 2015-07-01; only `agent=user` traffic is used (spiders excluded); redirects are resolved through the MediaWiki API; topics without an article in 2015 have no true baseline, so their index is relative to their first year.
+
+## Worked example
+
+```{python}
+import pandas as pd
+from nostalgia_index import NostalgiaIndex
+
+views = pd.read_csv("fixtures/views.csv", parse_dates=["date"])
+totals = pd.read_csv("fixtures/totals.csv", parse_dates=["date"])
+ni = NostalgiaIndex()
+idx = ni.compute(views, totals)
+ni.summary(idx).round(1)
+```
+
+```{python}
+ni.revivals(idx).head()
+```

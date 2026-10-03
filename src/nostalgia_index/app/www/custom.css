@@ -1,0 +1,17 @@
+:root {
+  --atomic-orange: #ff6f3c;
+  --atomic-teal: #2ec4b6;
+  --atomic-yellow: #ffd23f;
+  --atomic-aluminum: #cbcbcb;
+  --atomic-navy: #011627;
+}
+body { background: #f4f4f2; color: var(--atomic-navy); }
+.bslib-page-sidebar > header, .navbar { background: var(--atomic-navy) !important; color: var(--atomic-yellow) !important; border-bottom: 4px solid var(--atomic-orange); }
+.bslib-sidebar-layout > .sidebar { background: var(--atomic-aluminum); }
+.btn-primary { background: var(--atomic-orange); border-color: var(--atomic-orange); color: var(--atomic-navy); }
+.btn-primary:hover { background: var(--atomic-yellow); border-color: var(--atomic-yellow); color: var(--atomic-navy); }
+.btn-outline-secondary { color: var(--atomic-navy); border-color: var(--atomic-teal); }
+.btn-outline-secondary:hover { background: var(--atomic-teal); border-color: var(--atomic-teal); color: var(--atomic-navy); }
+.bslib-value-box { border: 2px solid var(--atomic-teal); }
+.bslib-value-box .value-box-title { color: var(--atomic-navy); }
+.nav-tabs .nav-link.active { border-top: 3px solid var(--atomic-orange); }

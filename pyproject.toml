@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "nostalgia_index"
+version = "0.1.0"
+description = "Wikipedia pageviews as a cultural pulse: a normalized nostalgia index, Shiny app and CLI."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "shiny>=1.0",
+    "shinywidgets",
+    "plotly",
+    "httpx",
+    "pandas",
+    "diskcache",
+    "click",
+    "great-tables",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-playwright", "respx", "great-docs", "ruff"]
+
+[project.scripts]
+nostalgia = "nostalgia_index.cli:cli"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nostalgia_index"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

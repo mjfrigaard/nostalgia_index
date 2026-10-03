@@ -1,0 +1,5 @@
+---
+title: Ethics and rate limits
+---
+
+Requests send a descriptive `User-Agent` with contact info, per Wikimedia policy. Edit `USER_AGENT` in `nostalgia_index.client` to use your own. Only `agent=user` data is requested. Responses are cached on disk (`~/.cache/nostalgia_index`, override with `NOSTALGIA_CACHE_DIR`) because historical data does not change. 429 and 5xx responses are retried with backoff.

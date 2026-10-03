@@ -1,0 +1,17 @@
+---
+title: Quickstart
+---
+
+```bash
+pip install nostalgia_index
+nostalgia fetch Tamagotchi Furby --out index.csv
+nostalgia run
+```
+
+```python
+from nostalgia_index import fetch_views, fetch_project_total, NostalgiaIndex
+
+views = fetch_views("Furby")
+totals = fetch_project_total()
+idx = NostalgiaIndex().compute(views, totals)
+```
