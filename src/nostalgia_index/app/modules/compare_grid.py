@@ -3,7 +3,7 @@ from shiny import module, reactive, render, ui
 from shinywidgets import output_widget, render_plotly
 
 from ...index import NostalgiaIndex
-from ..theme import COLORWAY
+from ..theme import COLORWAY, PLOTLY_LAYOUT
 
 
 @module.ui
@@ -31,6 +31,7 @@ def grid_server(input, output, session, index_df: reactive.Calc):
         )
         fig.update_layout(showlegend=False)
         fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+        fig.update_layout(**PLOTLY_LAYOUT)
         return fig
 
     @render.data_frame

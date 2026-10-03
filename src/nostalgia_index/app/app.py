@@ -41,6 +41,7 @@ app_ui = ui.page_sidebar(
         ui.nav_panel("Methodology", ui.markdown(METHODOLOGY_MD)),
     ),
     ui.include_css(Path(__file__).parent / "www" / "custom.css"),
+    ui.input_dark_mode(mode="dark"),
     title="📼 Nostalgia Index",
 )
 

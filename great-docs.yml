@@ -730,8 +730,8 @@ reference:
 #   default_description: null   # Falls back to the package description when null
 
 display_name: Nostalgia Index
-navbar_color: "#011627"
-accent_color: "#ff6f3c"
+navbar_color: "#1e1c21"
+accent_color: "#f4640d"
 cli:
   enabled: true
   module: nostalgia_index.cli

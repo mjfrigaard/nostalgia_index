@@ -10,7 +10,7 @@ _ALL = sorted({t for v in PRESETS.values() for t in v})
 def picker_ui():
     return ui.TagList(
         ui.input_selectize(
-            "topics", "Topics", _ALL, selected=["Oregon Trail II", "Harry Potter"], multiple=True
+            "topics", "Topics", _ALL, selected=["Michael Jordan", "Nintendo 64"], multiple=True
         ),
         ui.div(
             *[

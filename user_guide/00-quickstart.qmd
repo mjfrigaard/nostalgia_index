@@ -2,11 +2,15 @@
 title: Quickstart
 ---
 
+This page gets you from installation to a computed index in a few commands. The command line is the fastest way to start. The commands below install the package, compute the index for `Tamagotchi` and `Furby` (written to `index.csv`), and launch the Shiny app.
+
 ```bash
 pip install nostalgia_index
 nostalgia fetch Tamagotchi Furby --out index.csv
 nostalgia run
 ```
+
+From Python, the same steps take three calls. `fetch_views()` downloads daily pageviews for one article, `fetch_project_total()` downloads total English Wikipedia traffic to use as the denominator, and `NostalgiaIndex().compute()` combines them.
 
 ```python
 from nostalgia_index import fetch_views, fetch_project_total, NostalgiaIndex
@@ -15,3 +19,31 @@ views = fetch_views("Furby")
 totals = fetch_project_total()
 idx = NostalgiaIndex().compute(views, totals)
 ```
+
+```{mermaid}
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}%%
+flowchart LR
+    API(["Wikimedia API"])
+    subgraph Pkg["<strong>nostalgia_index</strong>"]
+        C[["client<br>fetch_views<br>fetch_project_total"]]
+        K[("disk cache")]
+        I[["index<br>NostalgiaIndex"]]
+    end
+    CSV[/"index.csv"/]
+    APP("Shiny app")
+    API --> C
+    C <-.-> K
+    C --> I
+    I --> CSV
+    I --> APP
+
+style Pkg fill:#3b383f,color:#f6f0c6,stroke:#6c6b71,stroke-width:1px,rx:10,ry:10
+style C fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style K fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style I fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style API fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style CSV fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style APP fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+```
+
+The result in `idx` is a DataFrame with one row per article per day. The `nostalgia_index` column holds the scaled index, where 100 equals the article's level during its first 12 months. The first request for each article goes to the Wikimedia API; repeat requests read from a local cache on disk.

@@ -2,15 +2,82 @@
 title: Running the app
 ---
 
+The Shiny app wraps the same pipeline in an interface for comparing topics side by side. Launch it from the command line (the port defaults to 8000).
+
 ```bash
 nostalgia run --port 8000
 ```
 
-or from Python:
+You can also launch it from Python with `run_app()`.
 
 ```python
 from nostalgia_index import run_app
 run_app(port=8000)
 ```
 
-Pick topics or a preset, set smoothing and dates, then press Compute index.
+## Computing an index
+
+The sidebar holds every input the index needs. Work through it from top to bottom.
+
+```{mermaid}
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}%%
+flowchart TD
+    subgraph In["<strong>Sidebar inputs</strong>"]
+        TP["Topics"]
+        W["Smoothing"]
+        D["Date range"]
+    end
+    GO(["Compute index"])
+    subgraph Re["<strong>Reactive</strong>"]
+        F[["fetch_views<br>fetch_project_total"]]
+        IX[["NostalgiaIndex.compute"]]
+    end
+    subgraph Out["<strong>Outputs</strong>"]
+        VB["Value boxes"]
+        CH["Index chart"]
+        RT["Revival table"]
+        CG["Compare grid"]
+    end
+    TP --> GO
+    W --> GO
+    D --> GO
+    GO --> F --> IX
+    IX --> VB
+    IX --> CH
+    IX --> RT
+    IX --> CG
+
+style In fill:#3b383f,color:#f6f0c6,stroke:#6c6b71,stroke-width:1px,rx:10,ry:10
+style Re fill:#3b383f,color:#f6f0c6,stroke:#6c6b71,stroke-width:1px,rx:10,ry:10
+style Out fill:#3b383f,color:#f6f0c6,stroke:#6c6b71,stroke-width:1px,rx:10,ry:10
+style TP fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style W fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style D fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style GO fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style F fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style IX fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style VB fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style CH fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style RT fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style CG fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+```
+
+
+1. Choose articles in Topics, or click a preset button (Sports, Games, TV, and so on) to load a curated set. To add an article that isn't listed, type its title in Add an article and click Add. The app resolves redirects and warns you if no article exists.
+2. Set Smoothing (days) to control the rolling median window (7 to 90 days, default 28).
+3. Set the Date range. Data is available from 2015-07-01.
+4. Click Compute index.
+
+The app doesn't fetch or recompute anything until you click Compute index, so you can adjust several settings first.
+
+::: {.callout-note}
+The baseline is the first 12 months of the date range you select. Moving the start date moves the baseline, so the same topic can show different index values across date ranges.
+:::
+
+## Reading the results
+
+The value boxes across the top show the topic with the highest peak, the biggest comeback (the largest current change versus baseline), and the total number of revival events. The tabs below them hold the index chart, the revival events table, a comparison grid, and a short summary of the methodology.
+
+## Recap
+
+Launch the app with `nostalgia run` or `run_app()`, pick your topics and settings in the sidebar, and click Compute index. Keep the start date in mind when comparing runs, because it sets the baseline.

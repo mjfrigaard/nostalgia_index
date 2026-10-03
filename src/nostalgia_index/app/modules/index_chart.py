@@ -1,7 +1,7 @@
 import plotly.express as px
 from shiny import module, reactive, ui
 
-from ..theme import COLORWAY
+from ..theme import COLORWAY, PLOTLY_LAYOUT
 from shinywidgets import output_widget, render_plotly
 
 
@@ -24,4 +24,5 @@ def chart_server(input, output, session, index_df: reactive.Calc):
         fig.add_hline(y=100, line_dash="dot", annotation_text="baseline")
         if input.log_y():
             fig.update_yaxes(type="log")
+        fig.update_layout(**PLOTLY_LAYOUT)
         return fig

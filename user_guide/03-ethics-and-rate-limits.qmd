@@ -2,4 +2,46 @@
 title: Ethics and rate limits
 ---
 
-Requests send a descriptive `User-Agent` with contact info, per Wikimedia policy. Edit `USER_AGENT` in `nostalgia_index.client` to use your own. Only `agent=user` data is requested. Responses are cached on disk (`~/.cache/nostalgia_index`, override with `NOSTALGIA_CACHE_DIR`) because historical data does not change. 429 and 5xx responses are retried with backoff.
+The nostalgia index pulls its data from the [Wikimedia REST API](https://wikimedia.org/api/rest_v1/), a free public service. This page covers how the package keeps its requests polite and how to make them identify you.
+
+## Identifying your requests
+
+Wikimedia's [User-Agent policy](https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy) asks every client to send a descriptive `User-Agent` header with contact information. The package sends one with every request, but the default contains placeholder contact details. Edit `USER_AGENT` in `nostalgia_index.client` to use your own project URL and email.
+
+## Keeping request volume low
+
+The package requests only `agent=user` data, which excludes spiders. Historical pageviews don't change, so responses are cached on disk and each article and date range is downloaded only once. The cache lives in `~/.cache/nostalgia_index`; set the `NOSTALGIA_CACHE_DIR` environment variable to store it somewhere else.
+
+```{mermaid}
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}%%
+flowchart TD
+    REQ(["fetch_views"])
+    HIT{"in disk cache?"}
+    CACHE[("cached frame")]
+    CALL["GET with User-Agent<br>agent=user"]
+    ST{"status"}
+    BACK["exponential backoff<br>up to 4 retries"]
+    NF["empty frame + warning"]
+    OK["parse and cache"]
+    REQ --> HIT
+    HIT -- yes --> CACHE
+    HIT -- no --> CALL --> ST
+    ST -- "429 / 5xx" --> BACK --> CALL
+    ST -- 404 --> NF
+    ST -- 200 --> OK
+
+style REQ fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style HIT fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style CACHE fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style CALL fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style ST fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style BACK fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style NF fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+style OK fill:#ffbe00,color:#1e1c21,rx:5,ry:5
+```
+
+When the API responds with a 429 (too many requests) or a server error (500, 502, 503, or 504), the request is retried with exponential backoff, up to four times.
+
+## Recap
+
+Replace the placeholder contact details in `USER_AGENT` before making regular requests. The disk cache and backoff retries keep load on Wikimedia low, and `NOSTALGIA_CACHE_DIR` controls where cached responses are stored.
