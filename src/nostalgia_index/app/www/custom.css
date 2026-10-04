@@ -18,7 +18,9 @@ body, .bslib-page-sidebar { background: var(--rf-bg); color: var(--rf-cream); }
 .btn-primary:hover { background: var(--rf-amber); border-color: var(--rf-amber); color: #1e1c21; }
 .btn-outline-secondary { color: var(--rf-amber); border-color: var(--rf-grey); }
 .btn-outline-secondary:hover { background: var(--rf-amber); border-color: var(--rf-amber); color: #1e1c21; }
-.bslib-value-box { background: var(--rf-orange) !important; color: #1e1c21 !important; border: 2px solid var(--rf-amber); }
+.bslib-value-box { background: #1e1c21 !important; color: var(--rf-orange) !important; border: 2px solid var(--rf-orange); }
+.bslib-value-box .value-box-title, .bslib-value-box .value-box-value { color: var(--rf-orange) !important; }
+.bslib-value-box .value-box-value { font-weight: 700; }
 .form-control, .selectize-input, .selectize-dropdown { background: var(--rf-bg); color: var(--rf-cream); border-color: var(--rf-grey); }
 .selectize-input > .item { background: var(--rf-grey); color: var(--rf-cream); }
 a { color: var(--rf-amber); }
