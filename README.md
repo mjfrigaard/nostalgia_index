@@ -21,6 +21,9 @@ The command line interface covers the two most common tasks. `nostalgia fetch` c
 
 ```bash
 nostalgia fetch Tamagotchi Furby --out index.csv
+```
+
+```bash
 nostalgia run
 ```
 
@@ -54,9 +57,16 @@ The topic dropdown starts with 92 articles in 8 categories. Michael Jordan and N
 
 The documentation site is built with `great-docs`, which needs the dev extras and [Quarto](https://quarto.org/docs/get-started/) installed. The first command below builds the site, and the second opens it in a browser.
 
+Build the site into `great-docs/_site`:
+
 ```bash
-great-docs build      # build the site into great-docs/_site
-great-docs preview    # open it in your browser
+great-docs build
+```
+
+Open the documentation in the browser:
+
+```bash
+great-docs preview    
 ```
 
 Site settings live in `great-docs.yml`, and the guide pages live in `user_guide/*.qmd`. Reserve `great-docs init --force` for resetting the configuration.
