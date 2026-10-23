@@ -1,0 +1,120 @@
+---
+title: Desktop installer (plan)
+---
+
+This page is a plan for shipping the Nostalgia Index app as a desktop installer (`.dmg`, `.exe`, `.AppImage`) with the [shinyelectron](https://r-pkg.thecoatlessprofessor.com/shinyelectron/) R package (version 0.2.1 or later). Nothing described here exists in the repository yet.
+
+shinyelectron only understands an app directory (a folder with an `app.py`). The package is not an app directory, so the plan generates a thin launcher folder that imports the package, vendors a copy of the package next to it, and hands that folder to `shinyelectron::export()`. The package source stays as it is.
+
+```{mermaid}
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}%%
+flowchart TD
+    PKG["src/nostalgia_index/"] --> SC(["scaffold_py.py"])
+    SC --> APP["electron/app/"]
+    APP --> CHK(["app_check()"])
+    CHK --> EXP(["export()"])
+    EXP --> DIST["electron/dist/electron-app/dist/"]
+```
+
+## Entry point
+
+The app already exposes a module level `App` object, so no source changes are needed.
+
+```python
+# src/nostalgia_index/app/app.py
+app = App(app_ui, server, static_assets=Path(__file__).parent / "www")
+```
+
+The launcher imports it from `nostalgia_index.app.app`. `run_app()` is not used, because shinyelectron owns the port and the server process. The app name and version (`nostalgia_index`, `0.1.0`) come from `[project]` in `pyproject.toml`.
+
+## Build machine
+
+shinyelectron is an R package, so the build machine needs R (4.4 or later) and Node (22 or later, with npm 11.5 or later). End users need neither.
+
+```r
+shinyelectron::sitrep_shinyelectron()
+shinyelectron::install_nodejs()   # only if Node is missing
+```
+
+## Runtime strategy
+
+The plan uses the `bundled` strategy, which ships a portable Python with the installer (roughly 150 to 300 MB). The other strategies were ruled out for these reasons:
+
+* `shinylive`: `httpx` cannot open sockets inside Pyodide, and `diskcache` relies on SQLite file locking. The app could not reach the Wikimedia API.
+* `system`: it requires users to have Python on their `PATH`.
+* `container`: there are no heavy system libraries to justify Docker.
+* `auto-download`: it is a reasonable fallback if installer size becomes a problem, since the app needs internet access anyway.
+
+The app is never fully offline. Every index computation calls the Wikimedia REST API, so the installer removes the Python requirement, not the network requirement.
+
+## Scaffold the launcher
+
+Run the scaffold script from the package root. It is idempotent and should be re-run before every build to refresh the vendored copy.
+
+```bash
+python tools/scaffold_py.py \
+  --strategy=bundled \
+  --module=nostalgia_index.app.app \
+  --attr=app \
+  --platforms=mac,win,linux
+```
+
+It creates the following files:
+
+```
+electron/
+├── app/
+│   ├── app.py               # from nostalgia_index.app.app import app
+│   ├── requirements.txt     # [project].dependencies
+│   ├── nostalgia_index/     # vendored copy (gitignored)
+│   └── _shinyelectron.yml   # name, version, strategy, dependencies
+└── build.R                  # app_check() + export() into electron/dist
+```
+
+Two repository changes go with it. `electron/dist/` and `electron/app/nostalgia_index/` are added to `.gitignore`, and `electron/` is excluded from the sdist.
+
+```toml
+[tool.hatch.build.targets.sdist]
+exclude = ["electron"]
+```
+
+## Dependency checks
+
+* `shinywidgets` and `plotly`: these are pure Python and install from `requirements.txt` into the bundled runtime.
+* `custom.css`: it is resolved with `Path(__file__).parent`, so it loads from the vendored copy regardless of the working directory.
+* Cache: `diskcache` writes to `~/.cache/nostalgia_index` (or `NOSTALGIA_CACHE_DIR`). This resolves on all three platforms, but the Windows path should be confirmed in a test build.
+* User-Agent: `USER_AGENT` in `client.py` still holds placeholder contact details. These must be real before a public release (see [Ethics and rate limits](03-ethics-and-rate-limits.qmd)).
+* Python pin: set `dependencies.python.version` in `_shinyelectron.yml` to a version that satisfies `requires-python >= 3.10`.
+
+## Validate and build
+
+```bash
+Rscript electron/build.R
+```
+
+`build.R` runs `app_check("electron/app")` and then `export()`. Only the contents of `electron/dist/electron-app/dist/` get shipped. If the packaged app fails to start, launch it with `SHINYELECTRON_DEBUG=1` to see runtime detection, dependency installs, and server startup.
+
+## Signing and CI
+
+macOS installers only build on macOS, and `bundled` cannot cross-build, so each platform builds on its own CI runner.
+
+* Copy `build-installers.yml` from the py-shinyelectron-pkg skill assets into `.github/workflows/`, and copy `scaffold_py.py` into `tools/` (the workflow calls it there).
+* Signing uses `sign = TRUE` with the `CSC_LINK`, `CSC_KEY_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, and `APPLE_TEAM_ID` secrets. Secrets go in the job level `env:` block, never in files.
+* Trigger the workflow on version tags so the installer version tracks `pyproject.toml`.
+
+## Checklist
+
+```
+- [ ] Preflight the build machine (R, Node, npm)
+- [ ] Add tools/scaffold_py.py and run it with --strategy=bundled
+- [ ] Update .gitignore and the hatch sdist exclude
+- [ ] Pin dependencies.python.version
+- [ ] Replace the placeholder User-Agent contact details
+- [ ] Run electron/build.R locally and test the installer
+- [ ] Confirm the cache path on Windows
+- [ ] Add the CI workflow and signing secrets
+```
+
+## Version bumps
+
+The installer version is pinned to the package version. Bump `version` in `pyproject.toml` and re-run the scaffold; never edit the version in `_shinyelectron.yml` by hand.
